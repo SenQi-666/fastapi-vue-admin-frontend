@@ -1,0 +1,315 @@
+<template>
+    <page-header />
+    <div class="table-search-wrapper">
+        <a-card :bordered="false">
+            <a-form :model="formState" @finish="onFinish">
+                <a-row>
+                    <a-col flex="0 1 500px">
+                        <a-form-item name="username" label="用户名" style="max-width: 300px;">
+                            <a-input v-model:value="formState['username']" placeholder="请输入用户名" allowClear></a-input>
+                        </a-form-item>
+                    </a-col>
+                    <a-col flex="0 1 500px">
+                        <a-form-item name="name" label="姓名" style="max-width: 300px;">
+                            <a-input v-model:value="formState['name']" placeholder="请输入姓名" allowClear></a-input>
+                        </a-form-item>
+                    </a-col>
+                    <a-col flex="0 1 500px">
+                        <a-form-item name="available" label="状态" style="max-width: 300px;">
+                            <a-select v-model:value="formState['available']" placeholder="全部" allowClear>
+                                <a-select-option value="true">启用</a-select-option>
+                                <a-select-option value="false">停用</a-select-option>
+                            </a-select>
+                        </a-form-item>
+                    </a-col>
+                </a-row>
+                <a-row>
+                    <a-col>
+                        <a-button type="primary" html-type="submit">查询</a-button>
+                        <a-button style="margin: 0 8px" @click="resetFields">重置</a-button>
+                    </a-col>
+                </a-row>
+            </a-form>
+        </a-card>
+    </div>
+
+    <div class="table-wrapper">
+        <a-card title="用户列表" :bordered="false" :headStyle="{ borderBottom: 'none', padding: '20px 24px' }"
+            :bodyStyle="{ padding: '0 24px', minHeight: 'calc(100vh - 400px)' }">
+            <a-table :rowKey="record => record.id" :columns="columns" :data-source="dataSource"
+                :row-selection="rowSelection" @change="handleTableChange" :scroll="{ x: 500, y: 'calc(100vh - 500px)' }"
+                :pagination="pagination" :style="{ minHeight: '500px' }">
+                <template v-slot:bodyCell="{ column, record, index }">
+                    <template v-if="column.dataIndex === 'index'">
+                        <span>{{ index + 1 }}</span>
+                    </template>
+                    <template v-if="column.dataIndex === 'roles'">
+                        <span>
+                            {{ record.roles.map(item => item.name).join("，") }}
+                        </span>
+                    </template>
+                    <template v-if="column.dataIndex === 'positions'">
+                        <span>
+                            {{ record.positions.map(item => item.name).join("，") }}
+                        </span>
+                    </template>
+                    <template v-if="column.dataIndex === 'gender'">
+                        <a-tag :color="record.gender === 1 ? 'blue' : 'pink'"> {{ record.gender === 1 ? '男' : '女' }}
+                        </a-tag>
+                    </template>
+                    <template v-if="column.dataIndex === 'available'">
+                        <span><a-badge :color="record.available ? 'green' : 'red'" /> {{ record.available ? '启用' :
+                            '禁用' }}
+                        </span>
+                    </template>
+                    <template v-if="column.dataIndex === 'operation'">
+                        <a-button type="link">修改</a-button>
+                    </template>
+                </template>
+            </a-table>
+        </a-card>
+    </div>
+</template>
+
+<script lang="ts">
+import { ref, reactive, computed, unref } from 'vue';
+import PageHeader from '../../../components/PageHeader.vue';
+import type { TableColumnsType } from 'ant-design-vue';
+import { Table } from 'ant-design-vue';
+
+export default {
+    name: "User",
+    components: {
+        PageHeader: PageHeader
+    },
+
+    setup() {
+        interface DataType {
+            id: number;
+            username: string;
+            name: string;
+            mobile: string;
+            email: string;
+        }
+
+        const columns: TableColumnsType = [
+            {
+                title: '序号',
+                dataIndex: 'index',
+                align: 'center',
+                width: 80
+            },
+            {
+                title: '用户名',
+                dataIndex: 'username',
+                align: 'center'
+            },
+            {
+                title: '姓名',
+                dataIndex: 'name',
+                align: 'center'
+            },
+            {
+                title: '部门',
+                dataIndex: 'dept_id',
+                align: 'center'
+            },
+            {
+                title: '角色',
+                dataIndex: 'roles',
+                align: 'center'
+            },
+            {
+                title: '岗位',
+                dataIndex: 'positions',
+                align: 'center'
+            },
+            {
+                title: '邮箱',
+                dataIndex: 'email',
+                align: 'center'
+            },
+            {
+                title: '联系电话',
+                dataIndex: 'mobile',
+                align: 'center'
+            },
+            {
+                title: '性别',
+                dataIndex: 'gender',
+                align: 'center'
+            },
+            {
+                title: '状态',
+                dataIndex: 'available',
+                align: 'center'
+            },
+            {
+                title: '备注',
+                dataIndex: 'description',
+                align: 'center'
+            },
+            {
+                title: '操作',
+                dataIndex: 'operation',
+                align: 'center',
+                fixed: 'right',
+                width: 100
+            }
+        ];
+
+        const dataSource: DataType[] = reactive([
+            {
+                "created_at": "2024-01-12 09:09:03",
+                "updated_at": "2024-01-30 13:13:06",
+                "id": 1,
+                "description": null,
+                "creator": {
+                    "id": 2,
+                    "name": "测试"
+                },
+                "username": "senqi",
+                "name": "森七",
+                "mobile": "17777777777",
+                "email": "superadmin@example.com",
+                "gender": 1,
+                "is_superuser": true,
+                "dept_id": 1,
+                "roles": [
+                    {
+                        "id": 1,
+                        "name": "管理员",
+                        "order": 1,
+                        "available": true
+                    },
+                    {
+                        "id": 1,
+                        "name": "开发",
+                        "order": 2,
+                        "available": true
+                    }
+                ],
+                "positions": [
+                    {
+                        "id": 5,
+                        "name": "开发岗",
+                        "order": 5,
+                        "available": true
+                    }
+                ],
+                "available": true
+            },
+            {
+                "created_at": "2024-01-12 13:27:53",
+                "updated_at": "2024-01-17 16:07:59",
+                "id": 2,
+                "description": null,
+                "creator": null,
+                "username": "test",
+                "name": "测试",
+                "mobile": "17777777777",
+                "email": "test@example.com",
+                "gender": 2,
+                "is_superuser": false,
+                "dept_id": 3,
+                "roles": [],
+                "positions": [],
+                "available": true
+            }
+        ]);
+
+        for (var i = 100; i > 2; i--) {
+            dataSource.push({
+                "created_at": "2024-01-12 13:27:53",
+                "updated_at": "2024-01-17 16:07:59",
+                "id": i,
+                "description": null,
+                "creator": null,
+                "username": "test",
+                "name": "测试",
+                "mobile": "17777777777",
+                "email": "test@example.com",
+                "gender": 2,
+                "is_superuser": false,
+                "dept_id": 3,
+                "roles": [],
+                "positions": [],
+                "available": true
+            })
+        }
+        const expand = ref(false);
+
+        interface formData {
+            username?: string
+            name?: string
+            available?: string
+        }
+
+        const formState: formData = reactive({
+            username: "",
+            name: "",
+            available: "true"
+        });
+        const onFinish = (values: any) => {
+            console.log('Received values of form: ', values);
+            console.log('formState: ', formState);
+        };
+
+        const resetFields = () => {
+            Object.keys(formState).forEach((key: string) => {
+                delete formState[key];
+            });
+            formState.available = "true"
+            console.log(formState)
+        }
+
+        const pagination = reactive({
+            defaultPageSize: 10,
+            total: dataSource.length,
+            showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条 / 总共 ${total} 条`
+        })
+
+        const handleTableChange = (item: any) => {
+            console.log(item);
+        }
+
+        const selectedRowKeys = ref<DataType['id'][]>([]);
+
+        const onSelectChange = (selectingRowKeys: DataType['id'][], selectingRows: DataType[]) => {
+            console.log(`selectingRowKeys: ${selectingRowKeys}`, 'selectingRows: ', selectingRows);
+            selectedRowKeys.value = selectingRowKeys;
+        }
+
+        const rowSelection = computed(() => {
+            return {
+                selectedRowKeys: unref(selectedRowKeys),
+                onChange: onSelectChange,
+                hideDefaultSelections: true,
+                selections: [
+                    Table.SELECTION_ALL,
+                    Table.SELECTION_INVERT,
+                    Table.SELECTION_NONE
+                ]
+            }
+        });
+
+        return {
+            columns,
+            dataSource,
+            formState,
+            onFinish,
+            expand,
+            resetFields,
+            pagination,
+            handleTableChange,
+            rowSelection,
+        };
+    },
+};
+</script>
+
+<style lang="scss" scoped>
+.table-search-wrapper {
+    margin-block-end: 16px;
+}
+</style>
